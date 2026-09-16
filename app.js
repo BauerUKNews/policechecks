@@ -1,9 +1,11 @@
-import {patchSelection,markerColour,safeLink,healthState} from './logic.js';
+import {patchSelection,markerColour,safeLink,healthState,minutesAgo} from './logic.js';
 const $=s=>document.querySelector(s), config=window.POLICE_CONFIG;
 const PAGE=100, state={mode:'all',selected:new Set(),rows:[],total:0,patches:[],member:null,session:null,version:0,busy:false,health:null,healthAt:0};
 let overlayKey='',client,map,overlays,markers,signup=false,recovery=false,authVersion=0,searchTimer;
 const text=(tag,value,cls)=>{const el=document.createElement(tag);el.textContent=value;if(cls)el.className=cls;return el;};
 const date=value=>value?new Date(value).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'Not yet';
+function releaseTime(value){const el=text('time',date(value)+' · '+minutesAgo(value));el.dateTime=value;el.dataset.releaseTime=value;return el;}
+function updateReleaseTimes(){document.querySelectorAll('[data-release-time]').forEach(el=>{el.textContent=date(el.dataset.releaseTime)+' · '+minutesAgo(el.dataset.releaseTime);});}
 function message(el,value){$(el).textContent=value;}
 function readPreferences(){try {const p=JSON.parse(localStorage.getItem('police-desk-filters')||'{}');state.mode=['all','patches','review','outside'].includes(p.mode)?p.mode:'all';state.selected=new Set((p.patches||[]).filter(id=>state.patches.some(x=>x.id===id)));}catch{}}
 function savePreferences(){try{localStorage.setItem('police-desk-filters',JSON.stringify({mode:state.mode,patches:[...state.selected]}));}catch{}}
@@ -50,7 +52,7 @@ async function loadReleases(more=false,quiet=false){if(!state.member?.approved)r
 function renderRows(){const root=$('#releases');root.replaceChildren();message('#result-count',`${state.total.toLocaleString()} releases${state.rows.length<state.total?' · '+state.rows.length+' loaded':''}`);$('#more').hidden=state.rows.length>=state.total;$('#more').disabled=false;
  if(!state.rows.length&&!state.busy){const e=text('div','', 'empty');e.append(text('h2',state.mode==='patches'&&!state.selected.size?'Choose your patches':'No releases found'),text('p','Change the coverage, time period or search to see more.','muted'));root.append(e);}
  for(const row of state.rows){const article=document.createElement('article');article.className='release'+(Date.now()-Date.parse(row.published_at)<3600000?' recent':'');article.id='release-'+row.id;
- const meta=text('div','','release-meta');meta.append(text('strong',row.force_name),text('span','· '+date(row.published_at)));article.append(meta);
+ const meta=text('div','','release-meta');meta.append(text('strong',row.force_name),releaseTime(row.published_at));article.append(meta);
  const heading=text('h2',''),url=safeLink(row.url);if(url){const link=text('a',row.title);link.href=url;link.target='_blank';link.rel='noopener noreferrer';heading.append(link);}else heading.textContent=row.title;article.append(heading);
  const tags=text('div','','tags');for(const id of row.patch_ids){tags.append(text('span',state.patches.find(p=>p.id===id)?.name||id,'tag'));}if(row.location_status!=='matched')tags.append(text('span',row.location_status==='outside'?'Outside mapped patches':'Needs location review','tag review'));article.append(tags);
  if(row.body)article.append(text('p',row.body.slice(0,290)+(row.body.length>290?'…':'')));
@@ -60,12 +62,28 @@ function renderRows(){const root=$('#releases');root.replaceChildren();message('
  for(const loc of row.locations)details.append(text('p',`${loc.name} — ${loc.source}: “${loc.excerpt}”`,'fine'));
  details.append(text('pre',row.body||(row.body_status==='unavailable'?'The source page could not be read. Open the original release above.':'Release text is waiting to be collected. The headline remains available.')));article.append(details);root.append(article);}
  renderMap();}
-function initMap(){if(map){setTimeout(()=>map.invalidateSize(),0);return;}map=L.map('map',{preferCanvas:true}).setView([54.6,-3.5],6);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);overlays=L.layerGroup().addTo(map);markers=L.layerGroup().addTo(map);setTimeout(()=>map.invalidateSize(),0);}
+function initMap(){
+ if(map){setTimeout(()=>map.invalidateSize(),0);return;}
+ map=L.map('map',{preferCanvas:true,minZoom:4,maxZoom:14,maxBounds:[[47,-16],[64,11]],maxBoundsViscosity:.7}).setView([54.6,-3.5],5);
+ map.createPane('baseLand');map.getPane('baseLand').style.zIndex='200';
+ map.createPane('placeLabels');map.getPane('placeLabels').style.zIndex='350';map.getPane('placeLabels').style.pointerEvents='none';
+ map.attributionControl.addAttribution('<a href="https://www.naturalearthdata.com/">Natural Earth</a>');
+ fetch('./basemap.json').then(r=>{if(!r.ok)throw new Error('Basemap unavailable');return r.json();}).then(data=>{
+  L.geoJSON(data,{pane:'baseLand',interactive:false,style:{color:'#3b4b5c',weight:.8,fillColor:'#233140',fillOpacity:1}}).addTo(map);
+ }).catch(()=>{message('#map-note','Background map unavailable. TSA boundaries and release dots are still shown.');$('#map-note').hidden=false;});
+ const places=[['London',51.5074,-.1278],['Birmingham',52.4862,-1.8904],['Manchester',53.4808,-2.2426],['Liverpool',53.4084,-2.9916],['Leeds',53.8008,-1.5491],['Cardiff',51.4816,-3.1791],['Bristol',51.4545,-2.5879],['Newcastle',54.9783,-1.6178],['Edinburgh',55.9533,-3.1883],['Glasgow',55.8642,-4.2518],['Belfast',54.5973,-5.9301],['Aberdeen',57.1497,-2.0943],['Plymouth',50.3755,-4.1427]];
+ const labels=L.layerGroup();for(const [name,lat,lng] of places)L.marker([lat,lng],{pane:'placeLabels',interactive:false,keyboard:false,icon:L.divIcon({className:'basemap-label',html:text('span',name),iconSize:[100,18],iconAnchor:[50,-6]})}).addTo(labels);
+ const updateLabels=()=>{if(map.getZoom()>=7)labels.addTo(map);else labels.removeFrom(map);};map.on('zoomend',updateLabels);
+ overlays=L.layerGroup().addTo(map);markers=L.layerGroup().addTo(map);
+ new ResizeObserver(()=>map.invalidateSize({pan:false})).observe($('#map'));
+ setTimeout(()=>{map.invalidateSize();fitMap();},0);
+}
+
 function visiblePatches(){return state.mode==='patches'?state.patches.filter(p=>state.selected.has(p.id)):state.patches;}
 function renderMap(){if(!map)return;markers.clearLayers();const key=state.mode+'|'+[...state.selected].sort().join(',')+'|'+$('#show-overlays').checked;
- if(key!==overlayKey){overlayKey=key;overlays.clearLayers();if($('#show-overlays').checked)for(const p of visiblePatches()){L.polygon(p.coords,{color:'#4700a3',weight:1,opacity:.65,fillColor:'#7b43b8',fillOpacity:.07,smoothFactor:1.5}).bindTooltip(text('span',p.name)).addTo(overlays);}}
+ if(key!==overlayKey){overlayKey=key;overlays.clearLayers();if($('#show-overlays').checked)for(const p of visiblePatches()){L.polygon(p.coords,{color:'#a397ce',weight:1,opacity:.65,fillColor:'#8973b4',fillOpacity:.035,smoothFactor:1.5}).bindTooltip(text('span',p.name)).addTo(overlays);}}
  let located=0;for(const row of state.rows){let has=false;for(const loc of row.locations){if(state.mode==='patches'&&!loc.patch_ids.some(id=>state.selected.has(id)))continue;if(!Number.isFinite(loc.lat)||!Number.isFinite(loc.lng))continue;has=true;
- const popup=document.createElement('div'),link=text('a',row.title);const url=safeLink(row.url);if(url){link.href=url;link.target='_blank';link.rel='noopener noreferrer';}popup.append(link,text('small',`${row.force_name} · ${loc.name} (inferred)`),text('small',date(row.published_at)));
+ const popup=document.createElement('div'),link=text('a',row.title);const url=safeLink(row.url);if(url){link.href=url;link.target='_blank';link.rel='noopener noreferrer';}popup.append(link,text('small',`${row.force_name} · ${loc.name} (inferred)`),releaseTime(row.published_at));
  const button=text('button','Read in list');button.addEventListener('click',()=>{map.closePopup();document.getElementById('release-'+row.id)?.scrollIntoView({behavior:'smooth',block:'center'});});popup.append(button);
  L.circleMarker([loc.lat,loc.lng],{radius:7,color:row.location_status==='review'?'#af6d00':'white',weight:2,fillColor:markerColour(row.published_at),fillOpacity:.95}).bindPopup(popup).addTo(markers);
  }if(has)located++;}
@@ -77,7 +95,7 @@ async function loadMembers(){const {data,error}=await client.from('desk_members'
 $('#toggle-signup').onclick=()=>{signup=!signup;message('#auth-submit',signup?'Create account':'Sign in');message('#toggle-signup',signup?'Already have an account? Sign in':'Create an account');$('#password').autocomplete=signup?'new-password':'current-password';message('#auth-message','');};
 $('#auth-form').onsubmit=async event=>{event.preventDefault();$('#auth-submit').disabled=true;message('#auth-message','');try{const email=$('#auth-email').value.trim(),password=$('#password').value;let result;
  if(recovery){result=await client.auth.updateUser({password});if(result.error)throw result.error;recovery=false;message('#auth-message','Password updated.');await onSession((await client.auth.getSession()).data.session);}
- else if(signup){result=await client.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});if(result.error)throw result.error;message('#auth-message','Check your email to verify your account. Owen must then approve your access.');}
+ else if(signup){result=await client.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});if(result.error)throw result.error;message('#auth-message','Expect a verification email from Supabase Auth. Check your spam or junk folder too. Follow the link to verify your account; Owen must then approve your access.');}
  else {result=await client.auth.signInWithPassword({email,password});if(result.error)throw result.error;}
  $('#password').value='';}catch(e){message('#auth-message',e.message);}finally{$('#auth-submit').disabled=false;}};
 $('#forgot').onclick=async()=>{const email=$('#auth-email').value.trim();if(!email){message('#auth-message','Enter your email address first.');return;}const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});message('#auth-message',error?error.message:'If the account exists, a password reset link will arrive by email.');};
@@ -97,8 +115,9 @@ async function init(){if(!config?.supabaseUrl||!config?.supabasePublishableKey){
  if(secretInBrowser){message('#setup','Invalid browser configuration. Contact Owen.');$('#setup').hidden=false;return;}
  try{client=window.supabase.createClient(config.supabaseUrl,config.supabasePublishableKey);const forces=await (await fetch('./forces.json')).json();for(const f of forces){if((f.type||'police')!=='police')continue;const option=text('option',f.name);option.value=f.key;$('#force').append(option);}
  client.auth.onAuthStateChange((event,session)=>{if(event==='TOKEN_REFRESHED'){state.session=session;return;}if(event==='PASSWORD_RECOVERY'){recovery=true;$('#auth-email').required=false;$('#auth-email').parentElement.hidden=true;message('#auth-submit','Set new password');$('#toggle-signup').hidden=true;$('#forgot').hidden=true;$('#password').autocomplete='new-password';}setTimeout(()=>onSession(session),0);});
- await pollHealth();setInterval(()=>{pollHealth();if(state.session&&!recovery)membership().then(m=>{if(!m?.approved){clearDesk();$('#waiting').hidden=false;}else if(!state.busy&&!$('#desk').hidden)loadReleases(false,true);}).catch(()=>{clearDesk();$('#waiting').hidden=false;message('#waiting-message','Access could not be checked. Please retry.');});},30000);setInterval(renderHealth,5000);
+ await pollHealth();setInterval(()=>{pollHealth();if(state.session&&!recovery)membership().then(m=>{if(!m?.approved){clearDesk();$('#waiting').hidden=false;}else if(!state.busy&&!$('#desk').hidden)loadReleases(false,true);}).catch(()=>{clearDesk();$('#waiting').hidden=false;message('#waiting-message','Access could not be checked. Please retry.');});},30000);setInterval(renderHealth,5000);setInterval(updateReleaseTimes,15000);
  }catch(e){message('#auth-message','The desk could not connect. '+e.message);}}
+new ResizeObserver(entries=>{document.documentElement.style.setProperty('--header-height',entries[0].target.getBoundingClientRect().height+'px');}).observe(document.querySelector('header'));
 init();
 
 // Optional agent controls share the visible filter actions and never bypass access.
