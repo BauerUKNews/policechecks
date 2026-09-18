@@ -1,48 +1,338 @@
 [
-  {"key": "avon-somerset", "name": "Avon & Somerset Police", "url": "https://www.avonandsomerset.police.uk/news/", "lat": 51.4545, "lng": -2.5879},
-  {"key": "bedfordshire", "name": "Bedfordshire Police", "url": "https://www.beds.police.uk/news/bedfordshire/news/", "lat": 52.1350, "lng": -0.4667},
-  {"key": "cambridgeshire", "name": "Cambridgeshire Police", "url": "https://www.cambs.police.uk/news/cambridgeshire/news/", "lat": 52.2053, "lng": 0.1218},
-  {"key": "cheshire", "name": "Cheshire Constabulary", "url": "https://www.cheshire.police.uk/news/cheshire/news/?newsCategory=News", "lat": 53.1958, "lng": -2.6031},
-  {"key": "city-of-london", "name": "City of London Police", "url": "https://www.cityoflondon.police.uk/news/city-of-london/news/", "lat": 51.5155, "lng": -0.0922},
-  {"key": "cleveland", "name": "Cleveland Police", "url": "https://www.cleveland.police.uk/news/cleveland/news/", "lat": 54.5742, "lng": -1.2349},
-  {"key": "cumbria", "name": "Cumbria Constabulary", "url": "https://www.news.cumbria.police.uk/feeds/news/cumbria.rss", "lat": 54.8951, "lng": -2.9382},
-  {"key": "derbyshire", "name": "Derbyshire Constabulary", "url": "https://www.derbyshire.police.uk/news/derbyshire/news/", "lat": 52.9225, "lng": -1.4746},
-  {"key": "devon-cornwall", "name": "Devon & Cornwall Police", "url": "https://news.devon-cornwall.police.uk/", "lat": 50.7184, "lng": -3.5339},
-  {"key": "dorset", "name": "Dorset Police", "url": "https://www.dorset.police.uk/news/dorset/news/", "lat": 50.7150, "lng": -2.4367},
-  {"key": "durham", "name": "Durham Constabulary", "url": "https://www.durham.police.uk/news/durham/news/", "lat": 54.7761, "lng": -1.5733},
-  {"key": "dyfed-powys", "name": "Dyfed-Powys Police", "url": "https://www.dyfed-powys.police.uk/news/dyfed-powys/news/", "lat": 51.8797, "lng": -4.3123},
-  {"key": "essex", "name": "Essex Police", "url": "https://www.essex.police.uk/news/essex/news/", "lat": 51.7343, "lng": 0.4691},
-  {"key": "gloucestershire", "name": "Gloucestershire Constabulary", "url": "https://www.gloucestershire.police.uk/news/gloucestershire/news/", "lat": 51.8642, "lng": -2.2380},
-  {"key": "greater-manchester", "name": "Greater Manchester Police", "url": "https://www.gmp.police.uk/news/greater-manchester/news/", "lat": 53.4808, "lng": -2.2426},
-  {"key": "gwent", "name": "Gwent Police", "url": "https://www.gwent.police.uk/news/gwent/news/", "lat": 51.5842, "lng": -3.0000},
-  {"key": "hampshire", "name": "Hampshire & IoW Constabulary", "url": "https://www.hampshire.police.uk/news/hampshire/news/", "lat": 50.9097, "lng": -1.4044},
-  {"key": "hertfordshire", "name": "Hertfordshire Constabulary", "url": "https://www.herts.police.uk/news/hertfordshire/news/", "lat": 51.7615, "lng": -0.2358},
-  {"key": "humberside", "name": "Humberside Police", "url": "https://www.humberside.police.uk/news/humberside/news/", "lat": 53.7457, "lng": -0.3367},
-  {"key": "kent", "name": "Kent Police", "url": "https://www.kent.police.uk/news/kent/latest/", "lat": 51.2787, "lng": 0.5217},
-  {"key": "lancashire", "name": "Lancashire Constabulary", "url": "https://www.lancashire.police.uk/news/lancashire/news/", "lat": 53.7632, "lng": -2.7031},
-  {"key": "leicestershire", "name": "Leicestershire Police", "url": "https://www.leics.police.uk/news/leicestershire/news/", "lat": 52.6369, "lng": -1.1398},
-  {"key": "lincolnshire", "name": "Lincolnshire Police", "url": "https://www.lincs.police.uk/news/lincolnshire/news/", "lat": 53.2307, "lng": -0.5406},
-  {"key": "merseyside", "name": "Merseyside Police", "url": "https://www.merseyside.police.uk/news/merseyside/news/", "lat": 53.4084, "lng": -2.9916},
-  {"key": "metropolitan", "name": "Metropolitan Police", "url": "https://news.met.police.uk/latest_news", "lat": 51.5074, "lng": -0.1278},
-  {"key": "norfolk", "name": "Norfolk Constabulary", "url": "https://www.norfolk.police.uk/news/norfolk/news/", "lat": 52.6309, "lng": 1.2974},
-  {"key": "north-wales", "name": "North Wales Police", "url": "https://www.northwales.police.uk/news/north-wales/news/", "lat": 53.1800, "lng": -3.4300},
-  {"key": "north-yorkshire", "name": "North Yorkshire Police", "url": "https://www.northyorkshire.police.uk/news/north-yorkshire/news/", "lat": 53.9600, "lng": -1.0873},
-  {"key": "northamptonshire", "name": "Northamptonshire Police", "url": "https://www.northants.police.uk/news/northants/news/", "lat": 52.2405, "lng": -0.9027},
-  {"key": "northumbria", "name": "Northumbria Police", "url": "https://www.northumbria.police.uk/news/northumbria/news/", "lat": 54.9783, "lng": -1.6178},
-  {"key": "nottinghamshire", "name": "Nottinghamshire Police", "url": "https://www.nottinghamshire.police.uk/news/nottinghamshire/news/", "lat": 52.9548, "lng": -1.1581},
-  {"key": "south-wales", "name": "South Wales Police", "url": "https://www.south-wales.police.uk/news/south-wales/news/", "lat": 51.4816, "lng": -3.1791},
-  {"key": "south-yorkshire", "name": "South Yorkshire Police", "url": "https://www.southyorkshire.police.uk/news/south-yorkshire/news/", "lat": 53.3811, "lng": -1.4701},
-  {"key": "staffordshire", "name": "Staffordshire Police", "url": "https://www.staffordshire.police.uk/news/staffordshire/news/", "lat": 52.8069, "lng": -2.1169},
-  {"key": "suffolk", "name": "Suffolk Constabulary", "url": "https://www.suffolk.police.uk/news/suffolk/news/", "lat": 52.0567, "lng": 1.1482},
-  {"key": "surrey", "name": "Surrey Police", "url": "https://www.surrey.police.uk/news/surrey/news/", "lat": 51.2362, "lng": -0.5704},
-  {"key": "sussex", "name": "Sussex Police", "url": "https://www.sussex.police.uk/news/sussex/news/", "lat": 50.8225, "lng": -0.1372},
-  {"key": "thames-valley", "name": "Thames Valley Police", "url": "https://www.thamesvalley.police.uk/news/thames-valley/news/", "lat": 51.7520, "lng": -1.2577},
-  {"key": "warwickshire", "name": "Warwickshire Police", "url": "https://www.warwickshire.police.uk/news/warwickshire/news/", "lat": 52.2823, "lng": -1.5849},
-  {"key": "west-mercia", "name": "West Mercia Police", "url": "https://www.westmercia.police.uk/news/west-mercia/news/", "lat": 52.1920, "lng": -2.2200},
-  {"key": "west-midlands", "name": "West Midlands Police", "url": "https://www.west-midlands.police.uk/news/west-midlands/news/", "lat": 52.4862, "lng": -1.8904},
-  {"key": "west-yorkshire", "name": "West Yorkshire Police", "url": "https://www.westyorkshire.police.uk/news-appeals", "lat": 53.7997, "lng": -1.5492},
-  {"key": "wiltshire", "name": "Wiltshire Police", "url": "https://www.wiltshire.police.uk/news/wiltshire/news/", "lat": 51.3492, "lng": -1.9927},
-  {"key": "merseyside-fire", "name": "Merseyside Fire & Rescue", "url": "https://www.merseyfire.gov.uk/media-centre/latest-incidents/", "type": "fire", "lat": 53.4084, "lng": -2.9916},
-  {"key": "manchester-fire", "name": "Greater Manchester Fire & Rescue", "url": "https://news.google.com/rss/search?q=site:manchesterfire.gov.uk/news%20when:2d&hl=en-GB&gl=GB&ceid=GB:en", "type": "fire", "lat": 53.4808, "lng": -2.2426, "titleOverride": "Greater Manchester Fire and Rescue Service", "subtitle": "A new post has been added to their website. Click here to view it."},
-  {"key": "gov-uk", "name": "GOV.UK", "url": "https://www.gov.uk/search/news-and-communications.atom", "type": "gov", "lat": 51.5014, "lng": -0.1265}
+  {
+    "key": "avon-somerset",
+    "name": "Avon & Somerset Police",
+    "url": "https://www.avonandsomerset.police.uk/news/",
+    "lat": 51.4545,
+    "lng": -2.5879
+  },
+  {
+    "key": "bedfordshire",
+    "name": "Bedfordshire Police",
+    "url": "https://www.beds.police.uk/news/bedfordshire/news/",
+    "lat": 52.135,
+    "lng": -0.4667
+  },
+  {
+    "key": "cambridgeshire",
+    "name": "Cambridgeshire Police",
+    "url": "https://www.cambs.police.uk/news/cambridgeshire/news/",
+    "lat": 52.2053,
+    "lng": 0.1218
+  },
+  {
+    "key": "cheshire",
+    "name": "Cheshire Constabulary",
+    "url": "https://www.cheshire.police.uk/news/cheshire/news/?newsCategory=News",
+    "lat": 53.1958,
+    "lng": -2.6031
+  },
+  {
+    "key": "city-of-london",
+    "name": "City of London Police",
+    "url": "https://www.cityoflondon.police.uk/news/city-of-london/news/",
+    "lat": 51.5155,
+    "lng": -0.0922
+  },
+  {
+    "key": "cleveland",
+    "name": "Cleveland Police",
+    "url": "https://www.cleveland.police.uk/news/cleveland/news/",
+    "lat": 54.5742,
+    "lng": -1.2349
+  },
+  {
+    "key": "cumbria",
+    "name": "Cumbria Constabulary",
+    "url": "https://www.news.cumbria.police.uk/feeds/news/cumbria.rss",
+    "lat": 54.8951,
+    "lng": -2.9382
+  },
+  {
+    "key": "derbyshire",
+    "name": "Derbyshire Constabulary",
+    "url": "https://www.derbyshire.police.uk/news/derbyshire/news/",
+    "lat": 52.9225,
+    "lng": -1.4746
+  },
+  {
+    "key": "devon-cornwall",
+    "name": "Devon & Cornwall Police",
+    "url": "https://news.devon-cornwall.police.uk/",
+    "lat": 50.7184,
+    "lng": -3.5339
+  },
+  {
+    "key": "dorset",
+    "name": "Dorset Police",
+    "url": "https://www.dorset.police.uk/news/dorset/news/",
+    "lat": 50.715,
+    "lng": -2.4367
+  },
+  {
+    "key": "durham",
+    "name": "Durham Constabulary",
+    "url": "https://www.durham.police.uk/news/durham/news/",
+    "lat": 54.7761,
+    "lng": -1.5733
+  },
+  {
+    "key": "dyfed-powys",
+    "name": "Dyfed-Powys Police",
+    "url": "https://www.dyfed-powys.police.uk/news/dyfed-powys/news/",
+    "lat": 51.8797,
+    "lng": -4.3123
+  },
+  {
+    "key": "essex",
+    "name": "Essex Police",
+    "url": "https://www.essex.police.uk/news/essex/news/",
+    "lat": 51.7343,
+    "lng": 0.4691
+  },
+  {
+    "key": "gloucestershire",
+    "name": "Gloucestershire Constabulary",
+    "url": "https://www.gloucestershire.police.uk/news/gloucestershire/news/",
+    "lat": 51.8642,
+    "lng": -2.238
+  },
+  {
+    "key": "greater-manchester",
+    "name": "Greater Manchester Police",
+    "url": "https://www.gmp.police.uk/news/greater-manchester/news/",
+    "lat": 53.4808,
+    "lng": -2.2426
+  },
+  {
+    "key": "gwent",
+    "name": "Gwent Police",
+    "url": "https://www.gwent.police.uk/news/gwent/news/",
+    "lat": 51.5842,
+    "lng": -3.0
+  },
+  {
+    "key": "hampshire",
+    "name": "Hampshire & IoW Constabulary",
+    "url": "https://www.hampshire.police.uk/news/hampshire/news/",
+    "lat": 50.9097,
+    "lng": -1.4044
+  },
+  {
+    "key": "hertfordshire",
+    "name": "Hertfordshire Constabulary",
+    "url": "https://www.herts.police.uk/news/hertfordshire/news/",
+    "lat": 51.7615,
+    "lng": -0.2358
+  },
+  {
+    "key": "humberside",
+    "name": "Humberside Police",
+    "url": "https://www.humberside.police.uk/news/humberside/news/",
+    "lat": 53.7457,
+    "lng": -0.3367
+  },
+  {
+    "key": "kent",
+    "name": "Kent Police",
+    "url": "https://www.kent.police.uk/news/kent/latest/",
+    "lat": 51.2787,
+    "lng": 0.5217
+  },
+  {
+    "key": "lancashire",
+    "name": "Lancashire Constabulary",
+    "url": "https://www.lancashire.police.uk/news/lancashire/news/",
+    "lat": 53.7632,
+    "lng": -2.7031
+  },
+  {
+    "key": "leicestershire",
+    "name": "Leicestershire Police",
+    "url": "https://www.leics.police.uk/news/leicestershire/news/",
+    "lat": 52.6369,
+    "lng": -1.1398
+  },
+  {
+    "key": "lincolnshire",
+    "name": "Lincolnshire Police",
+    "url": "https://www.lincs.police.uk/news/lincolnshire/news/",
+    "lat": 53.2307,
+    "lng": -0.5406
+  },
+  {
+    "key": "merseyside",
+    "name": "Merseyside Police",
+    "url": "https://www.merseyside.police.uk/news/merseyside/news/",
+    "lat": 53.4084,
+    "lng": -2.9916
+  },
+  {
+    "key": "metropolitan",
+    "name": "Metropolitan Police",
+    "url": "https://news.met.police.uk/latest_news",
+    "lat": 51.5074,
+    "lng": -0.1278
+  },
+  {
+    "key": "norfolk",
+    "name": "Norfolk Constabulary",
+    "url": "https://www.norfolk.police.uk/news/norfolk/news/",
+    "lat": 52.6309,
+    "lng": 1.2974
+  },
+  {
+    "key": "north-wales",
+    "name": "North Wales Police",
+    "url": "https://www.northwales.police.uk/news/north-wales/news/",
+    "lat": 53.18,
+    "lng": -3.43
+  },
+  {
+    "key": "north-yorkshire",
+    "name": "North Yorkshire Police",
+    "url": "https://www.northyorkshire.police.uk/news/north-yorkshire/news/",
+    "lat": 53.96,
+    "lng": -1.0873
+  },
+  {
+    "key": "northamptonshire",
+    "name": "Northamptonshire Police",
+    "url": "https://www.northants.police.uk/news/northants/news/",
+    "lat": 52.2405,
+    "lng": -0.9027
+  },
+  {
+    "key": "northumbria",
+    "name": "Northumbria Police",
+    "url": "https://www.northumbria.police.uk/news/northumbria/news/",
+    "lat": 54.9783,
+    "lng": -1.6178
+  },
+  {
+    "key": "nottinghamshire",
+    "name": "Nottinghamshire Police",
+    "url": "https://www.nottinghamshire.police.uk/news/nottinghamshire/news/",
+    "lat": 52.9548,
+    "lng": -1.1581
+  },
+  {
+    "key": "south-wales",
+    "name": "South Wales Police",
+    "url": "https://www.south-wales.police.uk/news/south-wales/news/",
+    "lat": 51.4816,
+    "lng": -3.1791
+  },
+  {
+    "key": "south-yorkshire",
+    "name": "South Yorkshire Police",
+    "url": "https://www.southyorkshire.police.uk/news/south-yorkshire/news/",
+    "lat": 53.3811,
+    "lng": -1.4701
+  },
+  {
+    "key": "staffordshire",
+    "name": "Staffordshire Police",
+    "url": "https://www.staffordshire.police.uk/news/staffordshire/news/",
+    "lat": 52.8069,
+    "lng": -2.1169
+  },
+  {
+    "key": "suffolk",
+    "name": "Suffolk Constabulary",
+    "url": "https://www.suffolk.police.uk/news/suffolk/news/",
+    "lat": 52.0567,
+    "lng": 1.1482
+  },
+  {
+    "key": "surrey",
+    "name": "Surrey Police",
+    "url": "https://www.surrey.police.uk/news/surrey/news/",
+    "lat": 51.2362,
+    "lng": -0.5704
+  },
+  {
+    "key": "sussex",
+    "name": "Sussex Police",
+    "url": "https://www.sussex.police.uk/news/sussex/news/",
+    "lat": 50.8225,
+    "lng": -0.1372
+  },
+  {
+    "key": "thames-valley",
+    "name": "Thames Valley Police",
+    "url": "https://www.thamesvalley.police.uk/news/thames-valley/news/",
+    "lat": 51.752,
+    "lng": -1.2577
+  },
+  {
+    "key": "warwickshire",
+    "name": "Warwickshire Police",
+    "url": "https://www.warwickshire.police.uk/news/warwickshire/news/",
+    "lat": 52.2823,
+    "lng": -1.5849
+  },
+  {
+    "key": "west-mercia",
+    "name": "West Mercia Police",
+    "url": "https://www.westmercia.police.uk/news/west-mercia/news/",
+    "lat": 52.192,
+    "lng": -2.22
+  },
+  {
+    "key": "west-midlands",
+    "name": "West Midlands Police",
+    "url": "https://www.west-midlands.police.uk/news/west-midlands/news/",
+    "lat": 52.4862,
+    "lng": -1.8904
+  },
+  {
+    "key": "west-yorkshire",
+    "name": "West Yorkshire Police",
+    "url": "https://www.westyorkshire.police.uk/news-appeals",
+    "lat": 53.7997,
+    "lng": -1.5492
+  },
+  {
+    "key": "wiltshire",
+    "name": "Wiltshire Police",
+    "url": "https://www.wiltshire.police.uk/news/wiltshire/news/",
+    "lat": 51.3492,
+    "lng": -1.9927
+  },
+  {
+    "key": "national-crime-agency",
+    "name": "National Crime Agency",
+    "url": "https://www.nationalcrimeagency.gov.uk/news?format=feed&type=rss",
+    "type": "police",
+    "scope": "national",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "key": "merseyside-fire",
+    "name": "Merseyside Fire & Rescue",
+    "url": "https://www.merseyfire.gov.uk/media-centre/latest-incidents/",
+    "type": "fire",
+    "lat": 53.4084,
+    "lng": -2.9916
+  },
+  {
+    "key": "manchester-fire",
+    "name": "Greater Manchester Fire & Rescue",
+    "url": "https://news.google.com/rss/search?q=site:manchesterfire.gov.uk/news%20when:2d&hl=en-GB&gl=GB&ceid=GB:en",
+    "type": "fire",
+    "lat": 53.4808,
+    "lng": -2.2426,
+    "titleOverride": "Greater Manchester Fire and Rescue Service",
+    "subtitle": "A new post has been added to their website. Click here to view it."
+  },
+  {
+    "key": "gov-uk",
+    "name": "GOV.UK",
+    "url": "https://www.gov.uk/search/news-and-communications.atom",
+    "type": "gov",
+    "lat": 51.5014,
+    "lng": -0.1265
+  }
 ]
