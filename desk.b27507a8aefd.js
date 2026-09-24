@@ -1,4 +1,4 @@
-import {patchSelection,markerColour,safeLink,healthState,minutesAgo,releaseFreshness,orderedGroups,collectorTime,clockDisplay,nextScrapeLabel,isForceAreaOnly,webDraftSections} from './logic.js';
+import {patchSelection,markerColour,safeLink,healthState,minutesAgo,releaseFreshness,orderedGroups,collectorTime,clockDisplay,nextScrapeLabel,isForceAreaOnly,webDraftSections} from './logic.23036191bb0d.js';
 const $=s=>document.querySelector(s), config=window.POLICE_CONFIG;
 const mobileView=window.matchMedia('(max-width: 760px), (max-width: 1000px) and (pointer: coarse) and (max-height: 500px)');
 const PAGE=100, state={mode:'all',selected:new Set(),expanded:new Set(),rows:[],total:0,patches:[],member:null,session:null,version:0,busy:false,health:null,healthAt:0};
@@ -121,7 +121,7 @@ function initMap(){
  map.createPane('baseLand');map.getPane('baseLand').style.zIndex='200';
  map.createPane('placeLabels');map.getPane('placeLabels').style.zIndex='350';map.getPane('placeLabels').style.pointerEvents='none';
  map.attributionControl.addAttribution('<a href="https://www.naturalearthdata.com/">Natural Earth</a>');
- fetch('./basemap.json').then(r=>{if(!r.ok)throw new Error('Basemap unavailable');return r.json();}).then(data=>{
+ fetch('./basemap.969e0725f651.json').then(r=>{if(!r.ok)throw new Error('Basemap unavailable');return r.json();}).then(data=>{
   L.geoJSON(data,{pane:'baseLand',interactive:false,style:{color:'#3b4b5c',weight:.8,fillColor:'#233140',fillOpacity:1}}).addTo(map);
  }).catch(()=>{message('#map-note','Background map unavailable. TSA boundaries and release dots are still shown.');$('#map-note').hidden=false;});
  const places=[['London',51.5074,-.1278],['Birmingham',52.4862,-1.8904],['Manchester',53.4808,-2.2426],['Liverpool',53.4084,-2.9916],['Leeds',53.8008,-1.5491],['Cardiff',51.4816,-3.1791],['Bristol',51.4545,-2.5879],['Newcastle',54.9783,-1.6178],['Edinburgh',55.9533,-3.1883],['Glasgow',55.8642,-4.2518],['Belfast',54.5973,-5.9301],['Aberdeen',57.1497,-2.0943],['Plymouth',50.3755,-4.1427]];

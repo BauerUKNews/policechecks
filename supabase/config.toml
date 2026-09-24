@@ -1,0 +1,8 @@
+# The function verifies user tokens with Supabase Auth, including modern signing keys.
+[functions.write-story]
+verify_jwt = false
+
+# The endpoint checks each caller's Supabase user token and desk_is_admin()
+# itself, including for projects using modern signing keys.
+[functions.provision-user]
+verify_jwt = false
