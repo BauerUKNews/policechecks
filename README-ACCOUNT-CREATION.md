@@ -1,6 +1,6 @@
 # Add Owen-managed accounts
 
-This update lets Owen create a confirmed account with a temporary password from the existing **Account access & writing** area. The new user can sign in straight away, change their password from **Change password**, and Owen can later pause or revoke the account in the same user list.
+This update lets Owen create a confirmed account with a temporary password from the existing **Account access & writing** area. The new user can sign in straight away, change their password from **Change password**, and Owen can later pause or revoke the account in the same user list. Every user can right-click a story (or use its ⋯ options button) to copy its headline or release text; web/copy writing actions remain permission-controlled.
 
 The Supabase setup has now been completed in your live project: the `provision-user` function is deployed with its own user/admin checks, **Verify JWT with legacy secret** is off for that function, public sign-up is off, and email confirmation remains on. No new SQL or Supabase setup is left for this project.
 
