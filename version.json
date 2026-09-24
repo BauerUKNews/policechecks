@@ -1,10 +1,6 @@
 {
-  "app": "desk.89fe7b70238f.js",
-  "stylesheet": "desk.682e2e1c556a.css",
-  "logic": "logic.23036191bb0d.js",
-  "basemap": "basemap.969e0725f651.json",
-  "analytics": "analytics.04896fac84b1.js",
-  "analyticsCore": "analytics-core.c3e179a34ff7.js",
-  "analyticsCharts": "analytics-charts.1b8699185435.js",
-  "analyticsStylesheet": "analytics.bd262cd54ad1.css"
+  "app": "desk.225a45f75438.js",
+  "stylesheet": "desk.db0b17c67e0f.css",
+  "logic": "logic.923c4cbc1844.js",
+  "basemap": "basemap.969e0725f651.json"
 }
