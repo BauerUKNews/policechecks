@@ -49,4 +49,98 @@ header .health{margin-left:0;margin-right:auto}
 @keyframes release-flash{0%,100%{background-color:#bd2337}50%{background-color:#89172b}}
 @media(prefers-reduced-motion:reduce){.release-banner[data-freshness="fresh"]{animation:none}}
 
-.source-tabs{display:flex;gap:.45rem;margin:0 0 1.2rem;border-bottom:1px solid var(--border)}.source-tab{border-radius:6px 6px 0 0;border-bottom:0;padding:.7rem 1.2rem;color:#5b5a69;background:#f0eef4}.source-tab.active{background:#fff;color:var(--purple);font-weight:700;box-shadow:inset 0 3px var(--purple)}.source-tab:focus-visible{outline-offset:2px}
+/* Always-visible schedule and UK clock; :40 through :59 is the red period. */
+header{height:auto;min-height:88px;padding-top:.85rem;padding-bottom:.85rem;flex-wrap:wrap}
+.desk-timing{display:flex;gap:1.5rem;align-items:center}
+.timing-item{display:flex;flex-direction:column;gap:.3rem;min-width:8.5rem}
+.timing-item small{font-size:.75rem;color:#5f6270}
+.timing-item strong,.timing-item time{font-size:1rem;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+#current-time{font-size:1.5rem;letter-spacing:.03em;color:#292139}
+#current-time.deadline{color:#bd2337}
+#account{min-width:0}#email{overflow-wrap:anywhere}
+@media(max-width:650px){.desk-timing{gap:1rem;margin-left:auto}.timing-item{min-width:0}.timing-item strong{font-size:.875rem}#current-time{font-size:1.2rem}header{gap:.75rem}.health small{max-width:135px}}
+
+/* Phone layout: a single feed with the shared filters tucked into a dialog. */
+.mobile-only{display:none}.feed-actions{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+#filter-dialog{width:min(460px,calc(100vw - 1rem));max-width:none;max-height:calc(100dvh - 1rem);padding:0;border:1px solid var(--border);border-radius:12px;color:#20202b;background:#fff;overscroll-behavior:contain}
+#filter-dialog::backdrop{background:rgba(16,25,35,.55)}
+.filter-dialog-heading{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.8rem 1rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:white;z-index:1}
+.filter-dialog-heading h2{font-size:1.15rem}.filter-dialog-heading button{min-height:44px;color:var(--purple);font-weight:700}
+#filter-dialog .toolbar{border:0;border-radius:0;padding:1rem;gap:.8rem;margin:0;border-bottom:1px solid var(--border)}
+#filter-dialog .toolbar .search{flex:1 1 100%}#filter-dialog .toolbar label{flex:1 1 140px}#filter-dialog .toolbar select{width:100%}
+#filter-dialog aside{padding:1rem;border:0}#filter-dialog aside .view-button{display:block;width:100%;min-height:44px}
+#filter-dialog #patches{max-height:none;overflow:visible}#filter-dialog #patch-search{max-width:none;width:100%;font-size:1rem}
+#filter-dialog input,#filter-dialog select{font-size:1rem}#filter-dialog .group label{min-height:36px;align-items:center}
+#mobile-account-slot:not(:empty){padding:1rem;border-top:1px solid var(--border)}#filter-dialog #account{width:100%;display:flex;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+#filter-dialog #account button{min-height:44px}#mobile-admin-tools{margin:0 1rem 1rem;border-top:1px solid var(--border);padding-top:1rem}
+#mobile-admin-tools>summary{min-height:44px}#filter-dialog #admin{margin:0;padding:0;border:0}#filter-dialog #admin>h2{display:none}
+body.filters-open{overflow:hidden}
+@media(max-width:760px), (max-width:1000px) and (pointer:coarse) and (max-height:500px){
+ .mobile-only{display:inline-flex;align-items:center;justify-content:center}
+ header{min-height:64px;padding:.65rem .75rem;gap:.5rem;flex-wrap:nowrap}
+ header .health{gap:.4rem;margin:0 auto 0 0;flex-shrink:0}#health-detail{display:none}.health strong{font-size:.8rem}.health-dot{width:9px;height:9px}
+ .desk-timing{gap:.8rem;margin-left:0}.timing-item{min-width:0;gap:.2rem}.timing-item small{font-size:.7rem}.timing-item strong{font-size:.8rem}#current-time{font-size:1.1rem}
+ #desk{display:block;min-height:calc(100dvh - 120px)}.workspace{padding:.8rem}
+ .workspace-heading{align-items:center;gap:.5rem;margin-bottom:.4rem}.workspace-heading .eyebrow{display:none}.workspace-heading>div:first-child{min-width:0}
+ .workspace-heading h1{font-size:1.2rem;letter-spacing:-.02em;line-height:1.3;margin:.2rem 0;overflow-wrap:anywhere}
+ #selection-label{display:none}.feed-actions{gap:.35rem}.feed-actions button{min-height:44px;padding:.5rem .6rem;font-size:.875rem}
+ .results-heading{margin:.7rem 0;font-size:.8rem}#updated{display:none}
+ .results-layout{display:block}.map-panel{display:none}.release-feed{width:100%}
+ .release{scroll-margin-top:calc(var(--header-height,64px) + .75rem)}.release-banner{padding:.9rem}.release-body{padding:.5rem .9rem .9rem}
+ .release-meta{font-size:.8rem;gap:.5rem}.release-time{gap:.35rem}.release h2{font-size:1.05rem}.release-body>p{font-size:.95rem}
+ .release-feed>p{display:none}footer{padding:.8rem;font-size:.7rem;display:block}footer>span{display:none}
+}
+
+@media(max-width:760px), (max-width:1000px) and (pointer:coarse) and (max-height:500px){
+ header:has(>#account:not([hidden])){flex-wrap:wrap}header>#account{width:100%;justify-content:space-between}header>#account button{min-height:44px}
+}
+
+/* Compact cards on every screen: reveal the complete release with More. */
+.release-heading{display:block;margin-top:.45rem}
+.release-heading h2{min-width:0;margin:0;overflow-wrap:anywhere}
+.release-toggle{display:block;width:fit-content;min-width:0;min-height:24px;margin-top:.2rem;padding:0;font-size:.8rem;font-weight:600;line-height:1.5;background:transparent;color:inherit;border:0;border-radius:0;text-decoration:underline;text-underline-offset:2px}
+.release-toggle:hover{color:inherit;background:transparent;text-decoration-thickness:2px}
+.release-toggle:focus-visible{outline-color:currentColor}
+.story-actions{margin-left:auto;background:transparent;color:inherit;border:0;font-size:1.4rem;line-height:1;padding:.2rem .45rem;min-width:36px;min-height:32px}
+.story-actions:hover{background:rgba(0,0,0,.08);color:inherit}.story-actions:focus-visible{outline-color:currentColor}
+#writing-menu,#writing-dialog{border:1px solid var(--border);border-radius:10px;color:#20202b;background:white;padding:1rem;max-height:calc(100dvh - 2rem);max-width:calc(100vw - 1rem);overscroll-behavior:contain}
+#writing-menu{width:300px}#writing-dialog{width:850px}
+#writing-menu::backdrop{background:rgba(16,25,35,.15)}#writing-dialog::backdrop{background:rgba(16,25,35,.55)}
+.writing-dialog-heading{display:flex;justify-content:space-between;align-items:center;gap:1rem}.writing-dialog-heading h2{font-size:1.1rem}.writing-dialog-heading button{min-height:40px}
+#writing-story,#draft-source-title{font-weight:600;overflow-wrap:anywhere;margin:.7rem 0}
+.story-copy-actions{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;margin:.8rem 0 .35rem}
+.story-copy-actions button{min-height:44px}
+#writing-actions>button{display:block;width:100%;text-align:left;margin:.4rem 0;min-height:44px}
+#story-menu-message{min-height:1.25em;margin:.25rem 0 .65rem}
+#draft-output{display:block;width:100%;min-height:40dvh;resize:vertical;border:1px solid var(--border);border-radius:5px;padding:1rem;font:inherit;font-size:1rem;line-height:1.65;color:#20202b;background:#fff}
+#draft-output:focus{outline:3px solid #00b5a6;outline-offset:2px}.draft-actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1rem}
+.member{flex-wrap:wrap}.writing-permissions{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;width:100%;padding:.5rem 0}
+.writing-permissions label{display:flex;align-items:center;gap:.4rem;font-size:.875rem}.writing-permissions input[type=checkbox]{accent-color:var(--purple);width:18px;height:18px}
+.writing-permissions input[type=number]{width:85px;padding:.5rem}.writing-permissions small{margin:0}.writing-permissions button{font-size:.875rem}
+@media(max-width:760px){#writing-dialog{padding:.85rem;width:calc(100vw - 1rem)}.story-actions{min-height:36px}#draft-output{padding:.65rem}.draft-actions button{min-height:44px}}
+.release pre.release-text{max-height:none;overflow:visible;overflow-wrap:anywhere;margin:.85rem 0;font:inherit;font-size:1rem;line-height:1.6;white-space:pre-wrap}
+.release-feed .release-banner{padding:.75rem .9rem}
+@media(max-width:760px), (max-width:1000px) and (pointer:coarse) and (max-height:500px){
+ .release pre.release-text{font-size:.95rem}
+}
+
+.web-field{margin:1rem 0}.web-field>div{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.5rem}.web-field label{font-weight:600}.web-field button{min-height:40px;font-size:.875rem}
+.web-field textarea{display:block;width:100%;resize:vertical;border:1px solid var(--border);border-radius:5px;padding:.7rem;font:inherit;line-height:1.6;color:#20202b;background:white}.web-field textarea:focus{outline:3px solid #00b5a6;outline-offset:2px}
+
+/* Account shift controls share the admin panel on desktop and in mobile Filters. */
+.access-controls{width:100%;padding:.75rem 0;border-top:1px solid var(--border,#ddd)}
+.access-pause{margin-left:1rem}.access-editor{margin-top:.7rem}.access-editor summary{cursor:pointer;font-weight:600;padding:.5rem 0}
+.access-gate{display:flex;gap:.6rem;align-items:center;margin:.8rem 0}.access-gate input{width:18px;height:18px;flex:0 0 auto}
+.access-rule{border:1px solid var(--border,#ddd);border-radius:8px;padding:.8rem;margin:.7rem 0;display:flex;gap:.7rem;flex-wrap:wrap;min-width:0}
+.access-rule label{display:flex;flex-direction:column;gap:.3rem;min-width:0;flex:1 1 140px;font-size:.85rem}.access-rule input,.access-rule select{width:100%;min-width:0;box-sizing:border-box;padding:.5rem}
+.access-rule small{width:100%}.access-buttons{display:flex;gap:.5rem;flex-wrap:wrap}.access-buttons button{font-size:.85rem}.access-feedback{font-size:.875rem;margin:.4rem 0}
+@media(max-width:480px){.access-rule label{flex-basis:100%}.access-pause{margin:.5rem 0 .5rem .5rem}.access-gate{align-items:flex-start}}
+
+.data-nav{display:inline-flex;align-items:center;gap:.35rem;color:var(--purple);font-size:.85rem;font-weight:700;text-decoration:none;padding:.5rem;border-radius:6px;flex-shrink:0}.data-nav:hover{background:#f0e8fa}@media(max-width:760px){.data-nav span{display:none}.data-nav{padding:.4rem}.desk-timing{gap:.5rem}}
+
+#create-account{border:1px solid var(--border);border-radius:6px;padding:.8rem 1rem;margin:1rem 0 1.5rem;background:#faf9fc}
+#create-account summary{font-weight:700;color:var(--purple)}
+#create-account-form label,#password-form label{display:block;font-size:.875rem;font-weight:600;margin:.85rem 0}
+#create-account-form input,#password-form input{display:block;width:100%;margin-top:.35rem}
+#password-dialog{width:min(440px,calc(100vw - 2rem));border:1px solid var(--border);border-radius:8px;padding:1.25rem;box-shadow:0 12px 50px #14112540}
+#password-dialog::backdrop{background:#16131fb3}
