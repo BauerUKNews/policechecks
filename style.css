@@ -144,3 +144,12 @@ body.filters-open{overflow:hidden}
 #create-account-form input,#password-form input{display:block;width:100%;margin-top:.35rem}
 #password-dialog{width:min(440px,calc(100vw - 2rem));border:1px solid var(--border);border-radius:8px;padding:1.25rem;box-shadow:0 12px 50px #14112540}
 #password-dialog::backdrop{background:#16131fb3}
+
+/* Additive feed controls; existing desktop/map and mobile layout remain intact. */
+.feed-tabs{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.65rem}
+.feed-tabs button{font-size:.85rem;padding:.35rem .75rem}
+.feed-tabs button[aria-pressed=true]{background:var(--purple);border-color:var(--purple);color:white}
+.transport-status{display:flex;flex-wrap:wrap;gap:.3rem .75rem;margin:.5rem 0;font-size:.75rem;color:#496052}
+.feed-health-warning{color:#8a5512}.incident-state{font-size:.75rem;margin:.5rem 0 .1rem;line-height:1.5}
+.incident-state.stale{font-weight:700}#feed-scope{margin:.4rem 0}
+@media(max-width:760px){.feed-tabs{gap:.25rem}.feed-tabs button{padding:.3rem .5rem;font-size:.8rem}.transport-status{font-size:.7rem}.workspace-heading .feed-tabs{display:flex}}

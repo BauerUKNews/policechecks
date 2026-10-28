@@ -1,11 +1,12 @@
 import {patchSelection,markerColour,safeLink,healthState,minutesAgo,releaseFreshness,orderedGroups,collectorTime,clockDisplay,nextScrapeLabel,isForceAreaOnly,webDraftSections} from './logic.js';
 const $=s=>document.querySelector(s), config=window.POLICE_CONFIG;
 const mobileView=window.matchMedia('(max-width: 760px), (max-width: 1000px) and (pointer: coarse) and (max-height: 500px)');
-const PAGE=100, state={mode:'all',selected:new Set(),expanded:new Set(),rows:[],total:0,patches:[],member:null,session:null,version:0,busy:false,health:null,healthAt:0};
+const PAGE=100, state={feed:'all',feedHealth:[],sourceFilters:{},mode:'all',selected:new Set(),expanded:new Set(),rows:[],total:0,patches:[],member:null,session:null,version:0,busy:false,health:null,healthAt:0};
 let syncResponsiveLayout=()=>{};
 let accessTimer,accessPollBusy=false;
 let writingUsage=null,currentDraft=null,writingBusy=false,writingMenuTrigger=null;
 const drafts=new Map();
+let forceOptions=[];
 let overlayKey='',client,map,overlays,markers,recovery=false,authVersion=0,searchTimer;
 const text=(tag,value,cls)=>{const el=document.createElement(tag);el.textContent=value;if(cls)el.className=cls;return el;};
 const date=value=>value?new Date(value).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'Not yet';
@@ -16,9 +17,9 @@ function updateReleaseTimes(){
  document.querySelectorAll('.release-banner[data-published]').forEach(el=>{const freshness=releaseFreshness(el.dataset.published,now);if(el.dataset.freshness!==freshness)el.dataset.freshness=freshness;});
 }
 function message(el,value){$(el).textContent=value;}
-function readPreferences(){try {const p=JSON.parse(localStorage.getItem('police-desk-filters')||'{}');state.mode=['all','patches','review','outside'].includes(p.mode)?p.mode:'all';state.selected=new Set((p.patches||[]).filter(id=>state.patches.some(x=>x.id===id)));}catch{}}
-function savePreferences(){try{localStorage.setItem('police-desk-filters',JSON.stringify({mode:state.mode,patches:[...state.selected]}));}catch{}}
-function clearDesk(){clearTimeout(accessTimer);state.access=null;clearWriting();state.expanded.clear();if($('#filter-dialog').open)$('#filter-dialog').close();if($('#password-dialog').open)$('#password-dialog').close();$('#password-form').reset();$('#mobile-admin-tools').hidden=true;state.rows=[];state.member=null;state.version++;state.busy=false;$('#desk').hidden=true;$('#releases').replaceChildren();$('#members').replaceChildren();if(markers)markers.clearLayers();syncResponsiveLayout();}
+function readPreferences(){try {const p=JSON.parse(localStorage.getItem('police-desk-filters')||'{}');state.mode=['all','patches','review','outside'].includes(p.mode)?p.mode:'all';state.feed=['all','police','rail','flood'].includes(p.feed)?p.feed:'all';state.selected=new Set((p.patches||[]).filter(id=>state.patches.some(x=>x.id===id)));}catch{}}
+function savePreferences(){try{localStorage.setItem('police-desk-filters',JSON.stringify({mode:state.mode,patches:[...state.selected],feed:state.feed}));}catch{}}
+function clearDesk(){clearTimeout(accessTimer);state.feedHealth=[];message('#transport-status','');state.access=null;clearWriting();state.expanded.clear();if($('#filter-dialog').open)$('#filter-dialog').close();if($('#password-dialog').open)$('#password-dialog').close();$('#password-form').reset();$('#mobile-admin-tools').hidden=true;state.rows=[];state.member=null;state.version++;state.busy=false;$('#desk').hidden=true;$('#releases').replaceChildren();$('#members').replaceChildren();if(markers)markers.clearLayers();syncResponsiveLayout();}
 function renderHealth(){const online=healthState(state.health,state.healthAt);$('#health').className='health '+(online?'online':'offline');message('#health-label',online?'Online':'Offline');message('#health-detail',state.health?.last_data_at?'Last update '+date(state.health.last_data_at):client?'No collector updates yet':'Not connected yet');$('#health').title=online?'The collector is sending updates.':'Updates are not arriving. Stored releases remain available. Offline detection may take a few minutes.';}
 function renderTiming(){
  const now=Date.now(),clock=clockDisplay(collectorTime(state.health,state.healthAt,now));
@@ -60,7 +61,7 @@ async function onSession(session){const version=++authVersion;clearDesk();state.
  $('#desk').hidden=false;$('#auth').hidden=true;$('#admin').hidden=!member.is_admin;$('#mobile-admin-tools').hidden=!member.is_admin;
  if(!state.patches.length){const r=await fetch('./patches.json');if(!r.ok)throw new Error('Patch map could not be loaded.');state.patches=await r.json();readPreferences();renderPatches();}
  if(version!==authVersion)return;
- syncResponsiveLayout();initMap();renderSelection();await loadReleases();await loadWritingUsage();if(member.is_admin)await loadMembers();
+ syncResponsiveLayout();initMap();renderFeedControls();renderSelection();await loadReleases();await pollFeedHealth();await loadWritingUsage();if(member.is_admin)await loadMembers();
  }catch(e){if(version!==authVersion)return;clearDesk();showAccessMessage('error');message('#waiting-message',e.message);}}
 function renderPatches(){const root=$('#patches');root.replaceChildren();const groups=orderedGroups(state.patches);const query=$('#patch-search').value.toLowerCase();
  for(const group of groups){const all=state.patches.filter(p=>p.group===group), visible=all.filter(p=>(p.name+' '+group).toLowerCase().includes(query));if(!visible.length)continue;
@@ -70,11 +71,12 @@ function renderPatches(){const root=$('#patches');root.replaceChildren();const g
  for(const patch of visible){const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.checked=state.mode==='patches'&&state.selected.has(patch.id);label.append(box,text('span',patch.name));box.addEventListener('change',()=>{if(state.mode!=='patches')state.selected.clear();state.mode='patches';state.selected=patchSelection(state.selected,[patch.id],box.checked);changed(true);});details.append(label);}
  root.append(details);}}
 function renderSelection(){for(const [id,mode] of [['all','all'],['review','review'],['outside','outside']])$('#'+id).classList.toggle('active',state.mode===mode);const names=state.patches.filter(p=>state.selected.has(p.id)).map(p=>p.name);
- message('#view-title',state.mode==='all'?'All releases':state.mode==='review'?'Needs location review':state.mode==='outside'?'Outside mapped patches':names.length===1?names[0]:`${names.length} patches selected`);
- message('#selection-label',state.mode==='all'?'Across all patches, including releases awaiting a location':state.mode==='patches'?(names.join(' · ')||'Select one or more patches to see releases'):state.mode==='review'?'Unlocated or ambiguous releases': 'Located releases outside the supplied TSA boundaries');renderPatches();renderMap();}
+ message('#view-title',state.mode==='all'?(state.feed==='police'?'All releases':state.feed==='rail'?'Train issues':state.feed==='flood'?'Flood warnings':'All updates'):state.mode==='review'?'Needs location review':state.mode==='outside'?'Outside mapped patches':names.length===1?names[0]:`${names.length} patches selected`);
+ message('#selection-label',state.mode==='all'?state.feed==='police'?'Across all patches, including releases awaiting a location':(state.feed==='all'?'Across all patches · Police releases, train issues and flood warnings':'Across all patches'):state.mode==='patches'?(names.join(' · ')||'Select one or more patches to see releases'):state.mode==='review'?'Unlocated or ambiguous releases': 'Located releases outside the supplied TSA boundaries');renderPatches();renderMap();}
 function changed(fit=false){savePreferences();renderSelection();loadReleases();if(fit)fitMap();}
-function queryFor(){let q=client.from('police_releases').select('*',{count:'exact'}).order('published_at',{ascending:false}).order('id');
- const hours=Number($('#period').value);if(hours)q=q.gte('published_at',new Date(Date.now()-hours*3600000).toISOString());
+function queryFor(){let q=client.from(state.feed==='police'?'police_releases':'desk_feed').select('*',{count:'exact'}).order('published_at',{ascending:false}).order('id');
+ if(['rail','flood'].includes(state.feed))q=q.eq('feed_type',state.feed);
+ const hours=Number($('#period').value);if(hours){const cutoff=new Date(Date.now()-hours*3600000).toISOString();q=state.feed==='police'?q.gte('published_at',cutoff):q.or('published_at.gte.'+cutoff+',incident_status.eq.active');}
  if($('#force').value)q=q.eq('force',$('#force').value);
  if(state.mode==='patches')q=q.overlaps('patch_ids',[...state.selected]);
  if(state.mode==='review')q=q.in('location_status',['unlocated','review']);
@@ -90,8 +92,8 @@ async function loadReleases(more=false,quiet=false){if(!state.member?.approved||
  state.rows=more?[...state.rows,...data]:data;state.total=count;state.busy=false;renderRows();message('#updated','Updated '+date(new Date().toISOString()));
  }catch(e){if(version!==state.version)return;state.busy=false;message('#error','Releases could not be loaded. '+e.message);$('#error').hidden=false;message('#result-count',`${state.rows.length} releases loaded`);}
  finally{if(version===state.version){state.busy=false;$('#more').disabled=false;}}}
-function renderRows(){const root=$('#releases');root.replaceChildren();message('#result-count',`${state.total.toLocaleString()} releases${state.rows.length<state.total?' · '+state.rows.length+' loaded':''}`);$('#more').hidden=state.rows.length>=state.total;$('#more').disabled=false;
- if(!state.rows.length&&!state.busy){const e=text('div','', 'empty');e.append(text('h2',state.mode==='patches'&&!state.selected.size?'Choose your patches':'No releases found'),text('p','Change the coverage, time period or search to see more.','muted'));root.append(e);}
+function renderRows(){const root=$('#releases');root.replaceChildren();message('#result-count',`${state.total.toLocaleString()} ${state.feed==='police'?(state.total===1?'release':'releases'):(state.total===1?'update':'updates')}${state.rows.length<state.total?' · '+state.rows.length+' loaded':''}`);$('#more').hidden=state.rows.length>=state.total;$('#more').disabled=false;
+ if(!state.rows.length&&!state.busy){const e=text('div','', 'empty');e.append(text('h2',state.mode==='patches'&&!state.selected.size?'Choose your patches':state.feed==='police'?'No releases found':state.feed==='rail'?'No train issues in this view':state.feed==='flood'?'No flood warnings in this view':'No updates found'),text('p','Change the coverage, time period or search to see more.','muted'));root.append(e);}
  for(const row of state.rows){const article=document.createElement('article');article.className='release';article.id='release-'+row.id;
  const banner=text('div','','release-banner');banner.dataset.published=row.published_at;banner.dataset.freshness=releaseFreshness(row.published_at);
  const body=text('div','','release-body');body.id='release-body-'+row.id;body.hidden=!state.expanded.has(row.id);
@@ -102,8 +104,8 @@ function renderRows(){const root=$('#releases');root.replaceChildren();message('
  const heading=text('h2',''),url=safeLink(row.url);if(url){const link=text('a',row.title);link.href=url;link.target='_blank';link.rel='noopener noreferrer';heading.append(link);}else heading.textContent=row.title;
  const headingRow=text('div','','release-heading'),toggle=text('button',body.hidden?'More':'Less','release-toggle');toggle.type='button';toggle.setAttribute('aria-controls',body.id);toggle.setAttribute('aria-expanded',String(!body.hidden));toggle.setAttribute('aria-label',(body.hidden?'More about ':'Less about ')+row.title);
  toggle.addEventListener('click',()=>{body.hidden=!body.hidden;if(body.hidden)state.expanded.delete(row.id);else state.expanded.add(row.id);toggle.textContent=body.hidden?'More':'Less';toggle.setAttribute('aria-expanded',String(!body.hidden));toggle.setAttribute('aria-label',(body.hidden?'More about ':'Less about ')+row.title);});
- headingRow.append(heading,toggle);banner.append(headingRow);article.append(banner);
- const forceFallback=isForceAreaOnly(row);
+ headingRow.append(heading,toggle);banner.append(headingRow);if(row.feed_type&&row.feed_type!=='police'){const status=text('div','','incident-state');status.dataset.incidentId=row.id;banner.append(status);banner.dataset.incidentId=row.id;}article.append(banner);
+ const forceFallback=(!row.feed_type||row.feed_type==='police')&&isForceAreaOnly(row);
  const tags=text('div','','tags');for(const id of row.patch_ids){tags.append(text('span',state.patches.find(p=>p.id===id)?.name||id,'tag'));}if(row.location_status!=='matched')tags.append(text('span',forceFallback?'Force area only':row.location_status==='outside'?'Outside mapped patches':'Needs location review','tag review'));body.append(tags);
  body.append(text('pre',row.body||(row.body_status==='unavailable'?'The source page could not be read. Open the original release above.':'Release text is waiting to be collected. The headline remains available.'),'release-text'));
  const places=row.locations.map(p=>p.name).join(', ');body.append(text('div',places?'Inferred location: '+places:forceFallback?'Coverage based on '+row.force_name+' area; exact location unconfirmed.':'Location not confirmed','location-evidence'));
@@ -111,7 +113,7 @@ function renderRows(){const root=$('#releases');root.replaceChildren();message('
  details.append(text('p',row.location_note,'fine muted'));
  for(const loc of row.locations)details.append(text('p',`${loc.name} — ${loc.source}: “${loc.excerpt}”`,'fine'));
  body.append(details);article.append(body);root.append(article);}
- renderMap();}
+ updateIncidentStates();renderMap();}
 function initMap(){
  if(mobileView.matches)return;
  if(map){setTimeout(()=>map.invalidateSize(),0);return;}
@@ -134,11 +136,11 @@ function visiblePatches(){return state.mode==='patches'?state.patches.filter(p=>
 function renderMap(){if(!map||mobileView.matches)return;markers.clearLayers();const key=state.mode+'|'+[...state.selected].sort().join(',')+'|'+$('#show-overlays').checked;
  if(key!==overlayKey){overlayKey=key;overlays.clearLayers();if($('#show-overlays').checked)for(const p of visiblePatches()){L.polygon(p.coords,{color:'#a397ce',weight:1,opacity:.65,fillColor:'#8973b4',fillOpacity:.035,smoothFactor:1.5}).bindTooltip(text('span',p.name)).addTo(overlays);}}
  let located=0;for(const row of state.rows){let has=false;for(const loc of row.locations){if(state.mode==='patches'&&!loc.patch_ids.some(id=>state.selected.has(id)))continue;if(!Number.isFinite(loc.lat)||!Number.isFinite(loc.lng))continue;has=true;
- const popup=document.createElement('div'),link=text('a',row.title);const url=safeLink(row.url);if(url){link.href=url;link.target='_blank';link.rel='noopener noreferrer';}popup.append(link,text('small',`${row.force_name} · ${loc.name} (inferred)`),releaseTime(row.published_at));
+ const popup=document.createElement('div'),link=text('a',row.title);const url=safeLink(row.url);if(url){link.href=url;link.target='_blank';link.rel='noopener noreferrer';}popup.append(link,text('small',`${row.force_name} · ${loc.name}${row.feed_type&&row.feed_type!=='police'?'':' (inferred)'}`),releaseTime(row.published_at));
  const button=text('button','Read in list');button.addEventListener('click',()=>{map.closePopup();document.getElementById('release-'+row.id)?.scrollIntoView({behavior:'smooth',block:'center'});});popup.append(button);
  L.circleMarker([loc.lat,loc.lng],{radius:7,color:row.location_status==='review'?'#af6d00':'white',weight:2,fillColor:markerColour(row.published_at),fillOpacity:.95}).bindPopup(popup).addTo(markers);
  }if(has)located++;}
- const forceOnly=state.rows.filter(isForceAreaOnly).length;
+ const forceOnly=state.rows.filter(r=>(!r.feed_type||r.feed_type==='police')&&isForceAreaOnly(r)).length;
  message('#map-count',`${located} of ${state.rows.length} loaded releases mapped${forceOnly?' · '+forceOnly+' force area only (no pin)':''}${state.total>state.rows.length?' · Load more below':''}`);}
 function fitMap(){if(!map||mobileView.matches)return;const points=[];function collect(c){if(typeof c[0]==='number')points.push(c);else c.forEach(collect);}for(const p of visiblePatches())collect(p.coords);if(points.length)map.fitBounds(L.latLngBounds(points),{padding:[20,20],maxZoom:10});}
 async function loadMembers(){const version=authVersion;const {data,error}=await client.from('desk_members').select('*').order('created_at',{ascending:false});if(version!==authVersion||!state.member?.is_admin)return;if(error){message('#admin-message',error.message);return;}const usage=await client.rpc('desk_writing_admin_usage');if(version!==authVersion)return;const used=new Map((Array.isArray(usage.data)?usage.data:[]).map(x=>[x.user_id,x.used]));const root=$('#members');root.replaceChildren();
@@ -195,7 +197,7 @@ function allowanceText(){return writingUsage&&Number.isInteger(writingUsage.dail
 function renderWritingUsage(){message('#writing-summary',allowanceText());$('#writing-summary').hidden=!hasWritingAccess();message('#writing-allowance',allowanceText());message('#draft-allowance',allowanceText());}
 async function copyStory(value,label){try{await navigator.clipboard.writeText(value);message('#story-menu-message',label+' copied.');}catch{message('#story-menu-message','Could not copy automatically. Check clipboard permissions and try again.');}}
 function openStoryMenu(row,trigger,point){
- const menu=$('#writing-menu'),canWrite=hasWritingAccess(),sourceReady=row.body_status==='available'&&row.body?.trim().length>=120;
+ const menu=$('#writing-menu'),canWrite=(!row.feed_type||row.feed_type==='police')&&hasWritingAccess(),sourceReady=row.body_status==='available'&&row.body?.trim().length>=120;
  writingMenuTrigger=trigger;message('#writing-story',row.title);message('#story-menu-message','');
  $('#copy-story-headline').onclick=()=>copyStory(row.title,'Headline');
  const copyText=$('#copy-story-text');copyText.disabled=row.body_status!=='available'||!row.body?.trim();copyText.onclick=()=>copyStory(row.body.trim(),'Release text');
@@ -269,20 +271,20 @@ $('#signout').onclick=async()=>{const {error}=await client.auth.signOut();if(err
 $('#check-access').onclick=()=>onSession(state.session);
 for(const id of ['all','review','outside'])$('#'+id).onclick=()=>{state.mode=id;changed(true);};
 $('#clear').onclick=()=>{state.mode='patches';state.selected.clear();changed();};
-$('#reset').onclick=()=>{state.mode='all';state.selected.clear();$('#query').value='';$('#force').value='';$('#period').value='24';changed(true);};
+$('#reset').onclick=()=>{state.feed='all';state.sourceFilters={};renderFeedControls();state.mode='all';state.selected.clear();$('#query').value='';$('#force').value='';$('#period').value='24';changed(true);};
 $('#patch-search').oninput=renderPatches;
 $('#query').oninput=()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>loadReleases(),350);};
-$('#period').onchange=()=>loadReleases();$('#force').onchange=()=>loadReleases();$('#more').onclick=()=>loadReleases(true);
-$('#refresh').onclick=()=>{loadReleases();pollHealth();loadWritingUsage();if(state.member?.is_admin)loadMembers();};
+$('#period').onchange=()=>loadReleases();$('#force').onchange=()=>{state.sourceFilters[state.feed]=$('#force').value;loadReleases();};$('#more').onclick=()=>loadReleases(true);
+$('#refresh').onclick=()=>{loadReleases();pollHealth();pollFeedHealth();loadWritingUsage();if(state.member?.is_admin)loadMembers();};
 $('#show-overlays').onchange=renderMap;$('#fit-map').onclick=fitMap;
 async function init(){if(!config?.supabaseUrl||!config?.supabasePublishableKey){$('#setup').hidden=false;document.querySelectorAll('#auth button,#auth input').forEach(el=>el.disabled=true);return;}
  let secretInBrowser=config.supabasePublishableKey.startsWith('sb_secret_');
  if(config.supabasePublishableKey.startsWith('eyJ')){try{secretInBrowser=JSON.parse(atob(config.supabasePublishableKey.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).role!=='anon';}catch{secretInBrowser=true;}}
  if(secretInBrowser){message('#setup','Invalid browser configuration. Contact Owen.');$('#setup').hidden=false;return;}
- try{client=window.supabase.createClient(config.supabaseUrl,config.supabasePublishableKey);const forces=await (await fetch('./forces.json')).json();for(const f of forces){if((f.type||'police')!=='police')continue;const option=text('option',f.name);option.value=f.key;$('#force').append(option);}
+ try{client=window.supabase.createClient(config.supabaseUrl,config.supabasePublishableKey);const forces=await (await fetch('./forces.json')).json();forceOptions=forces.filter(f=>(f.type||'police')==='police');renderFeedControls();
  client.auth.onAuthStateChange((event,session)=>{if(event==='TOKEN_REFRESHED'||event==='USER_UPDATED'){state.session=session;return;}if(event==='PASSWORD_RECOVERY'){recovery=true;$('#auth-email').required=false;$('#auth-email').parentElement.hidden=true;message('#auth-submit','Set new password');$('#forgot').hidden=true;$('#password').autocomplete='new-password';}setTimeout(()=>onSession(session),0);});
- await pollHealth();setInterval(()=>{pollHealth();if(state.access?.allowed&&!state.busy&&!$('#desk').hidden)loadReleases(false,true);},30000);
- setInterval(refreshAccountAccess,10000);setInterval(renderHealth,5000);setInterval(updateReleaseTimes,1000);
+ await pollHealth();setInterval(()=>{pollHealth();pollFeedHealth();if(state.access?.allowed&&!state.busy&&!$('#desk').hidden)loadReleases(false,true);},30000);
+ setInterval(refreshAccountAccess,10000);setInterval(renderHealth,5000);setInterval(()=>{updateReleaseTimes();updateIncidentStates();renderFeedHealth();},1000);
  const recheckOnReturn=()=>{if(!state.session||recovery)return;if(state.access?.allowed&&(performance.now()>=state.accessMonotonicUntil||Date.now()>=state.accessWallUntil)){++authVersion;clearDesk();showAccessMessage('check');}refreshAccountAccess();};
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)recheckOnReturn();});
  window.addEventListener('pageshow',event=>{if(event.persisted)recheckOnReturn();});
@@ -320,4 +322,48 @@ if(document.modelContext?.registerTool){
   state.mode=input.mode;state.selected=new Set(input.patchIds||[]);savePreferences();renderSelection();await loadReleases();fitMap();return {mode:state.mode,patchIds:[...state.selected],count:state.total};
  }};
  try{Promise.resolve(document.modelContext.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});}catch{}
+}
+
+// These controls use the same patch selection, list renderer and access checks.
+function renderFeedControls(){
+ for(const button of document.querySelectorAll('[data-feed]'))button.setAttribute('aria-pressed',String(button.dataset.feed===state.feed));
+ message('#source-label',state.feed==='police'?'Force':'Source');
+ const select=$('#force');select.replaceChildren(text('option',state.feed==='police'?'All forces':'All sources'));select.firstChild.value='';
+ if(['all','police'].includes(state.feed))for(const f of forceOptions){const o=text('option',f.name);o.value=f.key;select.append(o);}
+ if(['all','rail'].includes(state.feed)){const o=text('option','National Rail');o.value='rail';select.append(o);}
+ if(['all','flood'].includes(state.feed))for(const [key,label] of [['flood-england','Environment Agency · England'],['flood-scotland','SEPA · Scotland'],['flood-wales','Natural Resources Wales']]){const o=text('option',label);o.value=key;select.append(o);}
+ select.value=state.sourceFilters[state.feed]||'';
+ message('#feed-scope',state.feed==='police'?'':state.feed==='rail'?'Major disruption only: more than half of the departures checked at a monitored station.':state.feed==='flood'?'Warnings and severe warnings in England, Scotland and Wales. Lower-level flood alerts are excluded.':'Current train issues and flood warnings remain visible even when first seen before the selected period.');
+ $('#feed-scope').hidden=state.feed==='police';$('#transport-coverage').hidden=state.feed==='police';document.querySelector('.release-feed').setAttribute('aria-label',state.feed==='police'?'Police releases':'Updates');renderFeedHealth();
+}
+for(const button of document.querySelectorAll('[data-feed]'))button.onclick=()=>{
+ if(state.feed===button.dataset.feed)return;state.sourceFilters[state.feed]=$('#force').value;
+ state.feed=button.dataset.feed;state.expanded.clear();renderFeedControls();changed();pollFeedHealth();
+};
+async function pollFeedHealth(){
+ if(!client||!state.access?.allowed)return;const version=authVersion;
+ try{const {data,error}=await client.from('desk_feed_status').select('*');if(version!==authVersion)return;if(error)throw error;state.feedHealth=data||[];}
+ catch{if(version!==authVersion)return;state.feedHealth=[];}
+ renderFeedHealth();
+}
+function renderFeedHealth(){
+ const root=$('#transport-status');root.hidden=state.feed==='police'||!state.access?.allowed;if(root.hidden)return;
+ root.replaceChildren();const clock=collectorTime(state.health,state.healthAt);
+ const sources=[['rail','Trains'],['flood-england','England floods'],['flood-scotland','Scotland floods'],['flood-wales','Wales floods']];
+ for(const [id,name] of sources){if(state.feed==='rail'&&id!=='rail'||state.feed==='flood'&&id==='rail')continue;
+  const row=state.feedHealth.find(r=>r.id===id),fresh=row?.valid_until&&Date.parse(row.valid_until)>clock;
+  const label=!row?'Awaiting new Mac':!fresh?'Out of date':row.error?'Partial / check needed':'Checked '+minutesAgo(row.checked_at,clock).toLowerCase();
+  const chip=text('span',name+': '+label,'feed-health'+(fresh&&!row.error?'':' feed-health-warning'));
+  chip.title=[row?.detail,row?.error].filter(Boolean).join(' · ');root.append(chip);
+ }
+}
+function updateIncidentStates(){
+ const now=collectorTime(state.health,state.healthAt);
+ for(const el of document.querySelectorAll('.incident-state[data-incident-id]')){
+  const row=state.rows.find(r=>r.id===el.dataset.incidentId);if(!row)continue;
+  const stale=!Number.isFinite(Date.parse(row.valid_until))||Date.parse(row.valid_until)<=now;
+  const status=row.incident_status==='resolved'?(row.feed_type==='rail'?'Below threshold at last check':'No longer listed at last check'):stale?'Status out of date':row.feed_type==='rail'?'Major train disruption':'Warning listed';
+  el.textContent=status+' · Last checked '+minutesAgo(row.checked_at,now).toLowerCase();el.classList.toggle('stale',stale);
+  if(stale||row.incident_status==='resolved')el.closest('.release-banner').dataset.freshness='older';
+ }
 }
