@@ -153,3 +153,5 @@ body.filters-open{overflow:hidden}
 .feed-health-warning{color:#8a5512}.incident-state{font-size:.75rem;margin:.5rem 0 .1rem;line-height:1.5}
 .incident-state.stale{font-weight:700}#feed-scope{margin:.4rem 0}
 @media(max-width:760px){.feed-tabs{gap:.25rem}.feed-tabs button{padding:.3rem .5rem;font-size:.8rem}.transport-status{font-size:.7rem}.workspace-heading .feed-tabs{display:flex}}
+
+#reliability-link{font-size:.85rem;margin:.5rem 0}#reliability-link a{font-weight:650}.release-banner.flood-stood-down{background:#e6f3ec!important;border-top:3px solid #3b8765;animation:none!important}.flood-stood-down .incident-state{color:#286b4c;font-weight:700}

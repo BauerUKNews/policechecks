@@ -326,6 +326,7 @@ if(document.modelContext?.registerTool){
 
 // These controls use the same patch selection, list renderer and access checks.
 function renderFeedControls(){
+ $('#reliability-link').hidden=state.feed!=='rail';
  for(const button of document.querySelectorAll('[data-feed]'))button.setAttribute('aria-pressed',String(button.dataset.feed===state.feed));
  message('#source-label',state.feed==='police'?'Force':'Source');
  const select=$('#force');select.replaceChildren(text('option',state.feed==='police'?'All forces':'All sources'));select.firstChild.value='';
@@ -362,8 +363,9 @@ function updateIncidentStates(){
  for(const el of document.querySelectorAll('.incident-state[data-incident-id]')){
   const row=state.rows.find(r=>r.id===el.dataset.incidentId);if(!row)continue;
   const stale=!Number.isFinite(Date.parse(row.valid_until))||Date.parse(row.valid_until)<=now;
-  const status=row.incident_status==='resolved'?(row.feed_type==='rail'?'Below threshold at last check':'No longer listed at last check'):stale?'Status out of date':row.feed_type==='rail'?'Major train disruption':'Warning listed';
-  el.textContent=status+' · Last checked '+minutesAgo(row.checked_at,now).toLowerCase();el.classList.toggle('stale',stale);
+  const status=row.incident_status==='resolved'?(row.feed_type==='rail'?'Below threshold at last check':'Flood warning stood down'):stale?'Status out of date':row.feed_type==='rail'?'Major train disruption':'Warning listed';
+  el.textContent=status+(row.incident_status==='resolved'?' · Change detected ':' · Last checked ')+minutesAgo(row.checked_at,now).toLowerCase();el.classList.toggle('stale',stale&&row.incident_status!=='resolved');
+  const stoodDown=row.feed_type==='flood'&&row.incident_status==='resolved';el.closest('.release-banner').classList.toggle('flood-stood-down',stoodDown);
   if(stale||row.incident_status==='resolved')el.closest('.release-banner').dataset.freshness='older';
  }
 }
