@@ -74,7 +74,7 @@ function renderSelection(){for(const [id,mode] of [['all','all'],['review','revi
  message('#view-title',state.mode==='all'?(state.feed==='police'?'All releases':state.feed==='rail'?'Train issues':state.feed==='flood'?'Flood warnings':'All updates'):state.mode==='review'?'Needs location review':state.mode==='outside'?'Outside mapped patches':names.length===1?names[0]:`${names.length} patches selected`);
  message('#selection-label',state.mode==='all'?state.feed==='police'?'Across all patches, including releases awaiting a location':(state.feed==='all'?'Across all patches · Police releases, train issues and flood warnings':'Across all patches'):state.mode==='patches'?(names.join(' · ')||'Select one or more patches to see releases'):state.mode==='review'?'Unlocated or ambiguous releases': 'Located releases outside the supplied TSA boundaries');renderPatches();renderMap();}
 function changed(fit=false){savePreferences();renderSelection();loadReleases();if(fit)fitMap();}
-function queryFor(){let q=client.from(state.feed==='police'?'police_releases':'desk_feed').select('*',{count:'exact'}).order('published_at',{ascending:false}).order('id');
+function queryFor(){let q=client.from(state.feed==='police'?'police_releases':'desk_feed_history_v1').select('*',{count:'exact'}).order('published_at',{ascending:false}).order('id');
  if(['rail','flood'].includes(state.feed))q=q.eq('feed_type',state.feed);
  const hours=Number($('#period').value);if(hours){const cutoff=new Date(Date.now()-hours*3600000).toISOString();q=state.feed==='police'?q.gte('published_at',cutoff):q.or('published_at.gte.'+cutoff+',incident_status.eq.active');}
  if($('#force').value)q=q.eq('force',$('#force').value);
@@ -93,7 +93,7 @@ async function loadReleases(more=false,quiet=false){if(!state.member?.approved||
  }catch(e){if(version!==state.version)return;state.busy=false;message('#error','Releases could not be loaded. '+e.message);$('#error').hidden=false;message('#result-count',`${state.rows.length} releases loaded`);}
  finally{if(version===state.version){state.busy=false;$('#more').disabled=false;}}}
 function renderRows(){const root=$('#releases');root.replaceChildren();message('#result-count',`${state.total.toLocaleString()} ${state.feed==='police'?(state.total===1?'release':'releases'):(state.total===1?'update':'updates')}${state.rows.length<state.total?' · '+state.rows.length+' loaded':''}`);$('#more').hidden=state.rows.length>=state.total;$('#more').disabled=false;
- if(!state.rows.length&&!state.busy){const e=text('div','', 'empty');e.append(text('h2',state.mode==='patches'&&!state.selected.size?'Choose your patches':state.feed==='police'?'No releases found':state.feed==='rail'?'No train issues in this view':state.feed==='flood'?'No flood warnings in this view':'No updates found'),text('p','Change the coverage, time period or search to see more.','muted'));root.append(e);}
+ if(!state.rows.length&&!state.busy){const e=text('div','', 'empty');e.append(text('h2',state.mode==='patches'&&!state.selected.size?'Choose your patches':state.feed==='police'?'No releases found':state.feed==='rail'?'No above-average train alerts in this view':state.feed==='flood'?'No flood warnings in this view':'No updates found'),text('p','Change the coverage, time period or search to see more.','muted'));root.append(e);}
  for(const row of state.rows){const article=document.createElement('article');article.className='release';article.id='release-'+row.id;
  const banner=text('div','','release-banner');banner.dataset.published=row.published_at;banner.dataset.freshness=releaseFreshness(row.published_at);
  const body=text('div','','release-body');body.id='release-body-'+row.id;body.hidden=!state.expanded.has(row.id);
@@ -334,7 +334,7 @@ function renderFeedControls(){
  if(['all','rail'].includes(state.feed)){const o=text('option','National Rail');o.value='rail';select.append(o);}
  if(['all','flood'].includes(state.feed))for(const [key,label] of [['flood-england','Environment Agency · England'],['flood-scotland','SEPA · Scotland'],['flood-wales','Natural Resources Wales']]){const o=text('option',label);o.value=key;select.append(o);}
  select.value=state.sourceFilters[state.feed]||'';
- message('#feed-scope',state.feed==='police'?'':state.feed==='rail'?'Major disruption only: more than half of the departures checked at a monitored station.':state.feed==='flood'?'Warnings and severe warnings in England, Scotland and Wales. Lower-level flood alerts are excluded.':'Current train issues and flood warnings remain visible even when first seen before the selected period.');
+ message('#feed-scope',state.feed==='police'?'':state.feed==='rail'?'Sustained disruption above the station’s usual level for this time. See View all reliability for its graph and comparison.':state.feed==='flood'?'Warnings and severe warnings in England, Scotland and Wales. Lower-level flood alerts are excluded.':'Current train issues and flood warnings remain visible even when first seen before the selected period.');
  $('#feed-scope').hidden=state.feed==='police';$('#transport-coverage').hidden=state.feed==='police';document.querySelector('.release-feed').setAttribute('aria-label',state.feed==='police'?'Police releases':'Updates');renderFeedHealth();
 }
 for(const button of document.querySelectorAll('[data-feed]'))button.onclick=()=>{
@@ -363,7 +363,7 @@ function updateIncidentStates(){
  for(const el of document.querySelectorAll('.incident-state[data-incident-id]')){
   const row=state.rows.find(r=>r.id===el.dataset.incidentId);if(!row)continue;
   const stale=!Number.isFinite(Date.parse(row.valid_until))||Date.parse(row.valid_until)<=now;
-  const status=row.incident_status==='resolved'?(row.feed_type==='rail'?'Below threshold at last check':'Flood warning stood down'):stale?'Status out of date':row.feed_type==='rail'?'Major train disruption':'Warning listed';
+  const status=row.incident_status==='resolved'?(row.feed_type==='rail'?'Below threshold at last check':'Flood warning stood down'):stale?'Status out of date':row.feed_type==='rail'?'Disruption above usual':'Warning listed';
   el.textContent=status+(row.incident_status==='resolved'?' · Change detected ':' · Last checked ')+minutesAgo(row.checked_at,now).toLowerCase();el.classList.toggle('stale',stale&&row.incident_status!=='resolved');
   const stoodDown=row.feed_type==='flood'&&row.incident_status==='resolved';el.closest('.release-banner').classList.toggle('flood-stood-down',stoodDown);
   if(stale||row.incident_status==='resolved')el.closest('.release-banner').dataset.freshness='older';
